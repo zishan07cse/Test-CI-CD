@@ -40,11 +40,11 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Start the application (useful for feature testing)
-      - name: Start the app
-        run: npm start &
-        env:
-          CI: true  # Ensure Cypress runs in CI mode
+  #    # Start the application (useful for feature testing)
+    #  - name: Start the app
+    #    run: npm start &
+   #     env:
+   #       CI: true  # Ensure Cypress runs in CI mode
 
       # Install Cypress (for feature testing)
      # - name: Install Cypress
