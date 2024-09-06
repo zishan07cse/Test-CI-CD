@@ -47,8 +47,8 @@ jobs:
           CI: true  # Ensure Cypress runs in CI mode
 
       # Install Cypress (for feature testing)
-      - name: Install Cypress
-        run: npm install cypress --save-dev
+     # - name: Install Cypress
+      #  run: npm install cypress --save-dev
 
       # Run Cypress feature tests
       - name: Run Cypress feature tests
