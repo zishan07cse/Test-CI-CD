@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'feature-*'  # Triggers on branches with names starting with "feature-"
+
       - development  # Triggers on push events to the development branch
   pull_request:
     branches:
@@ -14,27 +15,35 @@ on:
     types:
       - completed  # Ensures this workflow runs when the Test CI/CD workflow is completed
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Set up Node.js environment with the specified version
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
+      # Install project dependencies
       - name: Install dependencies
         run: npm install
 
+      # Lint the code to check for syntax and style issues
       - name: Lint code
         run: npm run lint
 
+      # Run unit tests and generate coverage report
       - name: Run unit tests
         run: npm test -- --coverage
 
+      # Build the project
       - name: Build project
         run: npm run build
+
