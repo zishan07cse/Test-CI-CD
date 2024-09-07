@@ -9,10 +9,6 @@ on:
     branches:
       - development  # Triggers on pull requests targeting the development branch
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -43,24 +39,12 @@ jobs:
       # Build the project
       - name: Build project
         run: npm run build
+      - name: Create PR
+        uses: poorva17/create-pr-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          HEAD_BRANCH: feature-button
+          BASE_BRANCH: developement
+          delete-branch: false
+#this is my code here i have run my code suscessfully but no auto pr is created
 
-      # Debug Git Information
-      - name: Debug Git Information
-        run: |
-          git branch -a
-          git remote -v
-          git log --oneline -5
-          echo "HEAD_BRANCH: feature-button"
-          echo "BASE_BRANCH: development"
-
-      # Create a pull request to the 'development' branch from the 'feature-button' branch
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GIT_TOKEN }}
-          branch: feature-button  # The source branch (your feature branch)
-          base: development       # The target branch (your development branch)
-          title: "Auto PR from feature-button"
-          body: "This PR was automatically generated from feature-button."
-          commit-message: "Auto commit message"
-          delete-branch: false    # Optionally, do not delete the feature branch
