@@ -1,13 +1,13 @@
 name: Test CI/CD
 
-# Trigger the workflow on push to any feature branch and on PRs to the dev branch
+# Trigger the workflow on push to any feature branch and on PRs to the development branch
 on:
   push:
     branches:
       - 'feature-*'  # Triggers on branches with names starting with "feature-"
   pull_request:
     branches:
-      - dev  # Triggers on pull requests targeting the dev branch
+      - development  # Triggers on pull requests targeting the development branch
 
 jobs:
   build:
@@ -39,7 +39,12 @@ jobs:
       # Build the project
       - name: Build project
         run: npm run build
+      - name: Create PR
+        uses: poorva17/create-pr-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          HEAD_BRANCH: feature-button
+          BASE_BRANCH: development
+          delete-branch: false
+#this is my code here i have run my code suscessfully but no auto pr is created
 
-      # Run Cypress feature tests
-      - name: Run Cypress feature tests
-        run: npx cypress run
