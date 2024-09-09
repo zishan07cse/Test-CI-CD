@@ -39,3 +39,11 @@ jobs:
       # Build the project
       - name: Build project
         run: npm run build
+        # Dynamically create PR from feature branch to development
+      - name: Create PR
+        uses: poorva17/create-pr-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          HEAD_BRANCH: ${{ github.ref_name }}  # Dynamic feature branch
+          BASE_BRANCH: development
+          delete-branch: false
