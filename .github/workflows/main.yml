@@ -1,10 +1,9 @@
 name: Test CI/CD
 
-# Trigger the workflow on push to any feature branch and on PRs to the development branch
+# Trigger the workflow on push to the development branch and on PR merges to development
 on:
   push:
     branches:
-      - 'feature-*'  # Triggers on branches with names starting with "feature-"
       - development  # Triggers on push events to the development branch
   pull_request:
     branches:
