@@ -9,10 +9,6 @@ on:
   pull_request:
     branches:
       - development  # Triggers on pull requests targeting the development branch
-  workflow_run:
-    workflows: ["Test CI/CD"]
-    types:
-      - completed  # Ensures this workflow runs when the Test CI/CD workflow is completed
 
 jobs:
   build:
