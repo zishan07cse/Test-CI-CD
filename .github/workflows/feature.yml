@@ -4,10 +4,10 @@ name: Test CI/CD
 on:
   push:
     branches:
-      - development  # Triggers on push events to the development branch
-  pull_request:
-    branches:
-      - development  # Triggers on pull requests targeting the development branch
+      - 'feature-*'  # Triggers on branches with names starting with "feature-"
+  # pull_request:
+  #   branches:
+  #     - development  # Triggers on pull requests targeting the development branch
 
 jobs:
   build:
@@ -39,3 +39,11 @@ jobs:
       # Build the project
       - name: Build project
         run: npm run build
+        # Dynamically create PR from feature branch to development
+      - name: Create PR
+        uses: poorva17/create-pr-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          HEAD_BRANCH: ${{ github.ref_name }}  # Dynamic feature branch
+          BASE_BRANCH: development
+          delete-branch: false
