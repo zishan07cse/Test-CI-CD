@@ -62,7 +62,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
             # Create the project directory if it doesn't exist
-            PROJECT_DIR="/var/www/projects/test-ci-cd"
+            PROJECT_DIR="/var/www/html/test-ci-cd"
             if [ ! -d "$PROJECT_DIR" ]; then
               sudo mkdir -p $PROJECT_DIR
               sudo chown -R ubuntu:www-data $PROJECT_DIR
