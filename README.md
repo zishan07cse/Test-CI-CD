@@ -1,74 +1,47 @@
+# GitHub Actions CI/CD Workflow
 
-# Getting Started with Create React App
+This repository implements a CI/CD workflow using GitHub Actions. The workflow is designed to handle multiple branches: `development`, `feature/*`, and `production`. The following outlines the processes involved:
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Workflow Overview
 
-## Available Scripts
+1. **Branches**:
+   - **Development**: The main integration branch where all feature branches are merged.
+   - **Feature Branches**: These branches are used for developing new features. They are named with the prefix `feature/`.
+   - **Production**: The stable branch that represents the production-ready code.
 
-In the project directory, you can run:
+2. **Triggering the Workflow**:
+   - The workflow is triggered on:
+     - Push events to any feature branch.
+     - Pull request events targeting the `development` branch.
 
-### `npm start`
+3. **Steps in the Workflow**:
+   - **Linting**: The code in the feature branch is automatically linted to ensure quality and consistency.
+   - **Unit Testing**: The workflow runs unit tests to verify the functionality of the new feature.
+   - **Automatic Pull Requests**:
+     - If the linting and testing pass, an automatic pull request is created to merge the feature branch into the `development` branch.
+     - After the pull request for the `development` branch is accepted, the same checks are performed, and an automatic pull request is created to merge into the `production` branch.
+   - **Deployment**: Once the pull request for the `production` branch is accepted, the code is automatically deployed to an AWS EC2 instance.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Detailed Steps
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. Workflow Configuration
 
-### `npm test`
+The workflow is defined in the `.github/workflows/test-ci-cd.yml` file. Key configurations include:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Node.js Setup**: The workflow uses Node.js version 20.
+- **Linting and Testing**: Custom scripts are defined for linting and running unit tests.
+- **PR Creation**: The workflow uses the `poorva17/create-pr-action` to automate pull request creation.
+- **SSH Setup**: The deployment process sets up an SSH agent to connect to the AWS EC2 instance.
 
-### `npm run build`
+### 2. Secrets Configuration
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Ensure the following secrets are configured in your GitHub repository:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **GIT_TOKEN**: A GitHub personal access token with repository access.
+- **EC2_SSH_KEY**: The private key for SSH access to your AWS EC2 instance.
+- **EC2_IP**: The public IP address or DNS of your EC2 instance.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. Directory Structure
 
-### `npm run eject`
+The project is expected to have the following directory structure:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# react-ci-cd
->>>>>>> 31898be42a854f326a1773ebd851b9d0812194ab
