@@ -6,6 +6,7 @@ on:
     branches:
       - 'feature-*'  # Triggers on branches with names starting with "feature-"
       - development
+  # Uncomment the following if you want to trigger on pull requests to development
   # pull_request:
   #   branches:
   #     - development  # Triggers on pull requests targeting the development branch
@@ -40,7 +41,8 @@ jobs:
       # Build the project
       - name: Build project
         run: npm run build
-        # Dynamically create PR from feature branch to development
+
+      # Create PR from feature branch to development
       - name: Create PR
         uses: poorva17/create-pr-action@main
         env:
@@ -49,43 +51,47 @@ jobs:
           BASE_BRANCH: development
           delete-branch: false
 
+      # Set up SSH agent to deploy the build to EC2
       - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
+      # Deploy to EC2
       - name: Deploy to EC2
         run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
-          # Create the project directory if it doesn't exist
-        PROJECT_DIR="/var/www/projects/your-project"
-        if [ ! -d "$PROJECT_DIR" ]; then
-        sudo mkdir -p $PROJECT_DIR
-        sudo chown -R ubuntu:www-data $PROJECT_DIR
-        sudo chmod -R 775 $PROJECT_DIR
-        echo "Project directory created: $PROJECT_DIR"
-        else
-        echo "Project directory already exists: $PROJECT_DIR"
-        fi
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+            # Create the project directory if it doesn't exist
+            PROJECT_DIR="/var/www/projects/test-ci-cd"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              sudo mkdir -p $PROJECT_DIR
+              sudo chown -R ubuntu:www-data $PROJECT_DIR
+              sudo chmod -R 775 $PROJECT_DIR
+              echo "Project directory created: $PROJECT_DIR"
+            else
+              echo "Project directory already exists: $PROJECT_DIR"
+            fi
 
-        # Navigate to the project directory
-        cd $PROJECT_DIR
+            # Navigate to the project directory
+            cd $PROJECT_DIR
 
-        # Pull the latest code
-        git init
-        git remote add origin https://github.com/zishan07cse/Test-CI-CD.git
-        git fetch origin
-        git reset --hard origin/main
+            # Pull the latest code
+            if [ ! -d ".git" ]; then
+              git init
+              git remote add origin https://github.com/zishan07cse/Test-CI-CD.git
+            fi
+            git fetch origin
+            git reset --hard origin/main
 
-        # Install dependencies (Node.js, PHP, etc.)
-        # For example, if it's a Node.js project
-        if [ -f "package.json" ]; then
-          npm install
-          npm run build
-        fi
+            # Install dependencies (Node.js, PHP, etc.)
+            # For example, if it's a Node.js project
+            if [ -f "package.json" ]; then
+              npm install
+              npm run build
+            fi
 
-        # Restart Apache or any other service
-        sudo systemctl restart apache2
+            # Restart Apache or any other service
+            sudo systemctl restart apache2
 
-        echo "Deployment completed successfully."
-        EOF
+            echo "Deployment completed successfully."
+          EOF
