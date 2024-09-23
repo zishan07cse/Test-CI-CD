@@ -48,3 +48,44 @@ jobs:
           HEAD_BRANCH: ${{ github.ref_name }}  # Dynamic feature branch
           BASE_BRANCH: development
           delete-branch: false
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+          # Create the project directory if it doesn't exist
+        PROJECT_DIR="/var/www/projects/your-project"
+        if [ ! -d "$PROJECT_DIR" ]; then
+        sudo mkdir -p $PROJECT_DIR
+        sudo chown -R ubuntu:www-data $PROJECT_DIR
+        sudo chmod -R 775 $PROJECT_DIR
+        echo "Project directory created: $PROJECT_DIR"
+        else
+        echo "Project directory already exists: $PROJECT_DIR"
+        fi
+
+        # Navigate to the project directory
+        cd $PROJECT_DIR
+
+        # Pull the latest code
+        git init
+        git remote add origin https://github.com/zishan07cse/Test-CI-CD.git
+        git fetch origin
+        git reset --hard origin/main
+
+        # Install dependencies (Node.js, PHP, etc.)
+        # For example, if it's a Node.js project
+        if [ -f "package.json" ]; then
+          npm install
+          npm run build
+        fi
+
+        # Restart Apache or any other service
+        sudo systemctl restart apache2
+
+        echo "Deployment completed successfully."
+        EOF
