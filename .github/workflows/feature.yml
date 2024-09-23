@@ -1,0 +1,50 @@
+name: Test CI/CD
+
+# Trigger the workflow on push to the development branch and on PR merges to development
+on:
+  push:
+    branches:
+      - 'feature-*'  # Triggers on branches with names starting with "feature-"
+      - development
+  # pull_request:
+  #   branches:
+  #     - development  # Triggers on pull requests targeting the development branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js environment with the specified version
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Install project dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Lint the code to check for syntax and style issues
+      - name: Lint code
+        run: npm run lint
+
+      # Run unit tests and generate coverage report
+      - name: Run unit tests
+        run: npm test -- --coverage
+
+      # Build the project
+      - name: Build project
+        run: npm run build
+        # Dynamically create PR from feature branch to development
+      - name: Create PR
+        uses: poorva17/create-pr-action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          HEAD_BRANCH: ${{ github.ref_name }}  # Dynamic feature branch
+          BASE_BRANCH: development
+          delete-branch: false
