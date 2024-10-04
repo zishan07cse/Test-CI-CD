@@ -46,16 +46,20 @@ jobs:
       - name: Create PR
         uses: poorva17/create-pr-action@main
         env:
-          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
-          HEAD_BRANCH: ${{ github.ref_name }}  # Dynamic feature branch
-          BASE_BRANCH: development
-          delete-branch: false
+         - name: Create PR from development to production
+  uses: poorva17/create-pr-action@main
+  env:
+      GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+      HEAD_BRANCH: development  # Set the branch from which to create the PR
+      BASE_BRANCH: production   # Set the target branch for the PR
+      delete-branch: false      # Keep the branch after merging
+
 
       # Set up SSH agent to deploy the build to EC2
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+      # - name: Set up SSH agent
+      #   uses: webfactory/ssh-agent@v0.5.3
+      #   with:
+      #     ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
       # Deploy to EC2
       # - name: Deploy to EC2
