@@ -7,7 +7,7 @@ on:
       - production
   pull_request:
     branches:
-      - dev  # Triggers on pull requests to the dev branch
+      - development  # Triggers on pull requests to the dev branch
 
 jobs:
   build:
@@ -43,14 +43,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Merge feature branch into dev
+      - name: Merge feature branch into development
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
-          git checkout dev
-          git pull origin dev
+          git checkout development
+          git pull origin development
           git merge ${{ github.ref }}
-          git push origin dev
+          git push origin development
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
      
