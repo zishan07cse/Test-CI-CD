@@ -3,7 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - 'feature-*'  # Triggers on feature branches
+    #  - 'feature-*'  # Triggers on feature branches
+      - production
   pull_request:
     branches:
       - dev  # Triggers on pull requests to the dev branch
@@ -52,3 +53,42 @@ jobs:
           git push origin dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     
+      # Deploy to EC2
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+            # Create the project directory if it doesn't exist
+            PROJECT_DIR="/var/www/html/test-ci-cd"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              sudo mkdir -p $PROJECT_DIR
+              sudo chown -R ubuntu:www-data $PROJECT_DIR
+              sudo chmod -R 775 $PROJECT_DIR
+              echo "Project directory created: $PROJECT_DIR"
+            else
+              echo "Project directory already exists: $PROJECT_DIR"
+            fi
+
+            # Navigate to the project directory
+            cd $PROJECT_DIR
+
+            # Pull the latest code
+            if [ ! -d ".git" ]; then
+              git init
+              git remote add origin https://github.com/zishan07cse/Test-CI-CD.git
+            fi
+            git fetch origin
+            git reset --hard origin/development
+
+            # Install dependencies (Node.js, PHP, etc.)
+            # For example, if it's a Node.js project
+            if [ -f "package.json" ]; then
+              npm install
+              npm run build
+            fi
+
+            # Restart Apache or any other service
+            sudo systemctl restart apache2
+
+            echo "Deployment completed successfully."
+          EOF
