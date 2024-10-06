@@ -58,35 +58,42 @@ jobs:
      
       # Deploy to EC2
       - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
-            # Create the project directory if it doesn't exist
-            PROJECT_DIR="/var/www/html/git_action_ci_cd"
-            if [ ! -d "$PROJECT_DIR" ]; then
-              sudo mkdir -p $PROJECT_DIR
-              sudo chown -R ubuntu:www-data $PROJECT_DIR
-              sudo chmod -R 775 $PROJECT_DIR
-              echo "Project directory created: $PROJECT_DIR"
-            else
-              echo "Project directory already exists: $PROJECT_DIR"
-            fi
+  run: |
+    ssh -i ec2_key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+      # Create the project directory if it doesn't exist
+      PROJECT_DIR="/var/www/html/git_action_ci_cd"
+      if [ ! -d "$PROJECT_DIR" ]; then
+        sudo mkdir -p $PROJECT_DIR
+        sudo chown -R ubuntu:www-data $PROJECT_DIR
+        sudo chmod -R 775 $PROJECT_DIR
+        echo "Project directory created: $PROJECT_DIR"
+      else
+        echo "Project directory already exists: $PROJECT_DIR"
+      fi
 
-            # Navigate to the project directory
-            cd $PROJECT_DIR
+      # Navigate to the project directory
+      cd $PROJECT_DIR
 
-            # Pull the latest code
-            if [ ! -d ".git" ]; then
-              git init
-              git remote add origin https://github.com/zishan07cse/Git-Action-CI-CD.git
-            fi
-            git fetch origin
-            git reset --hard origin/development
+      # Pull the latest code
+      if [ ! -d ".git" ]; then
+        git init
+        git remote add origin https://github.com/zishan07cse/Git-Action-CI-CD.git
+      fi
+      git fetch origin
+      git reset --hard origin/development
 
-            # Install dependencies (Node.js, PHP, etc.)
-            if [ -f "package.json" ]; then
-              npm install
-              npm run build
-            fi
+      # Install dependencies (Node.js, PHP, etc.)
+      if [ -f "package.json" ]; then
+        npm install
+        npm run build
+      fi
+
+      # Restart Apache or any other service
+      sudo systemctl restart apache2
+
+      echo "Deployment completed successfully."
+    EOF
+
 
             # Restart Apache or any other service
             sudo systemctl restart apache2
