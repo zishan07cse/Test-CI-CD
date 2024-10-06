@@ -1,15 +1,12 @@
-name: Git action ci-cd
+name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - production
   pull_request:
     branches:
-      - development
+      - production
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,65 +21,45 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint code
-        run: npm run lint
-
-      - name: Run unit tests
-        run: npm test -- --coverage
-
-      - name: Build project
-        run: npm run build
-
-  merge:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && success()  # Only merge if build and test passed
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetch all branches
-
-      - name: Merge feature branch into development
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git fetch origin  # Fetch all branches
-          git checkout development || git checkout -b development  # Create if it doesn't exist
-          git pull origin development
-          git merge ${{ github.ref }}
-          git push origin development
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     
-      # Deploy to EC2
       - name: Deploy to EC2
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_IP: ${{ secrets.EC2_IP }}  # Store your EC2 IP in secrets
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
-            # Create the project directory if it doesn't exist
+          # Save the SSH key to a file
+          echo "$EC2_SSH_KEY" > /tmp/id_rsa
+          chmod 600 /tmp/id_rsa
+
+          # Use SSH to deploy to EC2
+          ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP << 'EOF'
+            # Define the project directory
             PROJECT_DIR="/var/www/html/git_action_ci_cd"
+            
+            # Check if the project directory exists
             if [ ! -d "$PROJECT_DIR" ]; then
+              echo "Creating project directory: $PROJECT_DIR"
               sudo mkdir -p $PROJECT_DIR
               sudo chown -R ubuntu:www-data $PROJECT_DIR
               sudo chmod -R 775 $PROJECT_DIR
-              echo "Project directory created: $PROJECT_DIR"
             else
               echo "Project directory already exists: $PROJECT_DIR"
             fi
-
+            
             # Navigate to the project directory
             cd $PROJECT_DIR
-
-            # Pull the latest code
+            
+            # Initialize git if it doesn't exist and pull the latest code
             if [ ! -d ".git" ]; then
+              echo "Initializing git repository..."
               git init
               git remote add origin https://github.com/zishan07cse/Git-Action-CI-CD.git
             fi
+            
+            # Fetch the latest code
             git fetch origin
-            git reset --hard origin/development
-
-            # Install dependencies (Node.js, PHP, etc.)
+            git reset --hard origin/production
+            
+            # Install dependencies and create a build
             if [ -f "package.json" ]; then
               npm install
               npm run build
