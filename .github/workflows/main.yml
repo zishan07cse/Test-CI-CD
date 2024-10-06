@@ -61,7 +61,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
             # Create the project directory if it doesn't exist
-            PROJECT_DIR="/var/www/html/test-ci-cd"
+            PROJECT_DIR="/var/www/html/git_action_ci_cd"
             if [ ! -d "$PROJECT_DIR" ]; then
               sudo mkdir -p $PROJECT_DIR
               sudo chown -R ubuntu:www-data $PROJECT_DIR
@@ -77,7 +77,7 @@ jobs:
             # Pull the latest code
             if [ ! -d ".git" ]; then
               git init
-              git remote add origin https://github.com/zishan07cse/Test-CI-CD.git
+              git remote add origin https://github.com/zishan07cse/Git-Action-CI-CD.git
             fi
             git fetch origin
             git reset --hard origin/development
