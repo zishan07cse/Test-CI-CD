@@ -21,52 +21,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Deploy to EC2
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_IP: ${{ secrets.EC2_IP }}  # Store your EC2 IP in secrets
-        run: |
-          # Save the SSH key to a file
-          echo "$EC2_SSH_KEY" > /tmp/id_rsa
-          chmod 600 /tmp/id_rsa
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: 13.232.51.210        # Your updated EC2 instance IP address
+          username: ubuntu           # Your SSH username
+          key: ${{ secrets.EC2_SSH_KEY }}  # Your SSH private key from GitHub Secrets
+          script: |
+            # Update packages and install Apache
+            sudo apt-get -y update
+            sudo apt-get install -y apache2
 
-          # Use SSH to deploy to EC2
-          ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ubuntu@$EC2_IP << 'EOF'
-            # Define the project directory
-            PROJECT_DIR="/var/www/html/git_action_ci_cd"
-            
-            # Check if the project directory exists
-            if [ ! -d "$PROJECT_DIR" ]; then
-              echo "Creating project directory: $PROJECT_DIR"
-              sudo mkdir -p $PROJECT_DIR
-              sudo chown -R ubuntu:www-data $PROJECT_DIR
-              sudo chmod -R 775 $PROJECT_DIR
-            else
-              echo "Project directory already exists: $PROJECT_DIR"
-            fi
-            
-            # Navigate to the project directory
-            cd $PROJECT_DIR
-            
-            # Initialize git if it doesn't exist and pull the latest code
-            if [ ! -d ".git" ]; then
-              echo "Initializing git repository..."
-              git init
-              git remote add origin https://github.com/zishan07cse/Git-Action-CI-CD.git
-            fi
-            
-            # Fetch the latest code
-            git fetch origin
-            git reset --hard origin/production
-            
-            # Install dependencies and create a build
-            if [ -f "package.json" ]; then
-              npm install
-              npm run build
-            fi
+            # Start and enable Apache
+            sudo systemctl start apache2
+            sudo systemctl enable apache2
 
-            # Restart Apache or any other service
-            sudo systemctl restart apache2
+            # Move files to /var/www/html
+            sudo mv * /var/www/html
 
-            echo "Deployment completed successfully."
-          EOF
+            echo "Deployment to /var/www/html completed successfully."
